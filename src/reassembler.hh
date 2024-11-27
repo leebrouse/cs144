@@ -1,6 +1,31 @@
 #pragma once
 
 #include "byte_stream.hh"
+#include <set>
+#include <string>
+//unassemble package struct
+#include <string>
+
+struct Interval {
+    uint64_t first_index;
+    std::string data;
+    bool is_last_substring;
+
+    // 重载小于操作符
+    bool operator<(const Interval& other) const {
+        // 优先按 first_index 比较
+        if (first_index != other.first_index) {
+            return first_index < other.first_index;
+        }
+        // 如果 first_index 相同，则按 data 字符串比较
+        if (data != other.data) {
+            return data < other.data;
+        }
+        // 如果前两个字段都相同，则按 is_last_substring 比较
+        return is_last_substring < other.is_last_substring;
+    }
+};
+
 
 class Reassembler
 {
@@ -42,4 +67,5 @@ public:
 
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
+  std::set<Interval> reBuffer{};//Reasssembler buffer including Interval structers
 };
