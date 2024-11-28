@@ -8,6 +8,7 @@
 
 struct Interval {
     uint64_t first_index;
+    uint64_t end_index;
     std::string data;
     bool is_last_substring;
 
@@ -68,4 +69,5 @@ public:
 private:
   ByteStream output_; // the Reassembler writes to this ByteStream
   std::set<Interval> reBuffer{};//Reasssembler buffer including Interval structers
+  uint64_t nxt_index{};//The next index number that byte stream want to get.
 };

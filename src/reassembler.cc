@@ -11,14 +11,14 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
   3.
   */
 
+  uint64_t available_capacity = output_.writer().available_capacity(); // available_capacity
   // Detects whether the byte stream is closed?
-  if ( output_.writer().is_closed() ) {
+  if ( output_.writer().is_closed() || available_capacity == 0 ) {
     return;
   }
 
   // 1.If Reasssembler buffer is empty,push it(Intervals) into reBuffer
   // 2.check the available_capacity in byte_stream
-  uint64_t available_capacity = output_.writer().available_capacity();
   if ( first_index == 0 ) {
     string subdata = data.substr( 0, min( data.length(), available_capacity ) );
     // The process of reassemble
@@ -28,14 +28,14 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
         return;
       }
     }
-    reBuffer.insert( { first_index, subdata, is_last_substring } );
+    reBuffer.insert( { first_index, first_index + subdata.length() - 1, subdata, is_last_substring } );
     output_.writer().push( subdata );
   } else {
-    //Detect whether have condition of first_index == 0 in the reassemble buffer.
-    auto it = reBuffer.lower_bound( { 0, "", false } );
+    // Detect whether have condition of first_index == 0 in the reassemble buffer.
+    auto it = reBuffer.lower_bound( { 0, 0, "", false } );
     if ( it != reBuffer.end() && it->first_index == 0 ) {
       string subdata = data.substr( 0, min( data.length(), available_capacity ) );
-      reBuffer.insert( { first_index, subdata, is_last_substring } );
+      reBuffer.insert( { first_index, first_index + subdata.length() - 1, subdata, is_last_substring } );
       output_.writer().push( subdata );
     }
   }
@@ -54,6 +54,7 @@ void Reassembler::insert( uint64_t first_index, string data, bool is_last_substr
 
 uint64_t Reassembler::bytes_pending() const
 {
+  // Q1:How to check the package was poped?
   if ( reBuffer.empty() ) {
     return {};
   }
